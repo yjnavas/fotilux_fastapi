@@ -1,13 +1,20 @@
 from sqlalchemy.orm import Session
 from app.models.post import Post
+from app.models.user import User
 from app.schemas.post import PostCreate
 from fastapi import HTTPException
+from sqlalchemy.orm import joinedload
+from datetime import datetime
 
 def get_post(db: Session, post_id: int):
     return db.query(Post).filter(Post.id == post_id).first()
 
 def get_posts(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Post).filter(Post.status == "active").offset(skip).limit(limit).all()
+
+def get_posts_with_users(db: Session, skip: int = 0, limit: int = 100):
+    """Get posts with user information for frontend format"""
+    return db.query(Post).join(User).filter(Post.status == "active").options(joinedload(Post.user)).offset(skip).limit(limit).all()
 
 def get_user_posts(db: Session, user_id: int, skip: int = 0, limit: int = 100):
     return db.query(Post).filter(Post.user_id == user_id, Post.status == "active").offset(skip).limit(limit).all()

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Any
 
 from app.core.database import get_db
-from app.schemas.post import PostCreate, PostOut
+from app.schemas.post import PostCreate, PostOut, PostWithUserOut
 from app.crud import post as post_crud
 
 router = APIRouter(
@@ -16,10 +16,38 @@ router = APIRouter(
 def create_post(post: PostCreate, user_id: int, db: Session = Depends(get_db)):
     return post_crud.create_post(db=db, post=post, user_id=user_id)
 
-@router.get("/", response_model=List[PostOut])
-def read_posts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    posts = post_crud.get_posts(db, skip=skip, limit=limit)
-    return posts
+# @router.get("/", response_model=List[PostOut])
+# def read_posts(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     posts = post_crud.get_posts(db, skip=skip, limit=limit)
+#     return posts
+
+@router.get("/", response_model=List[PostWithUserOut])
+def read_posts_frontend(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    """Get posts in the format expected by the frontend"""
+    db_posts = post_crud.get_posts_with_users(db, skip=skip, limit=limit)
+    
+    # Transform to frontend format
+    result = []
+    for post in db_posts:
+        # Get file from media relationship if available
+        file = None
+        if post.media and len(post.media) > 0:
+            file = post.media[0].filename
+        
+        post_dict = {
+            "id": post.id,
+            "title": post.title,
+            "body": post.body,
+            "user_id": post.user_id,
+            "name": post.user.name,  # Include user name from relationship
+            "status": post.status,
+            "created_at": post.created_at,
+            "updated_at": post.created_at,  # Using created_at as updated_at if not available
+            "file": file
+        }
+        result.append(post_dict)
+    
+    return result
 
 @router.get("/{post_id}", response_model=PostOut)
 def read_post(post_id: int, db: Session = Depends(get_db)):
