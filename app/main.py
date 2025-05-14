@@ -1,6 +1,7 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import API_TITLE, API_VERSION, API_DESCRIPTION
-from app.routers import users, posts, comments, likes, favorites
+from app.routers import users, posts, comments, likes, favorites, auth
 
 # Create FastAPI app
 app = FastAPI(
@@ -9,7 +10,17 @@ app = FastAPI(
     description=API_DESCRIPTION
 )
 
+# Configurar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite todos los orígenes en desarrollo
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos los métodos
+    allow_headers=["*"],  # Permite todos los headers
+)
+
 # Include routers
+app.include_router(auth.router)  # Autenticación primero
 app.include_router(users.router)
 app.include_router(posts.router)
 app.include_router(comments.router)

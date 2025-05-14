@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Load environment variables from .env file
 load_dotenv()
@@ -17,3 +18,8 @@ DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NA
 API_TITLE = os.getenv('API_TITLE', 'Social Network API')
 API_VERSION = os.getenv('API_VERSION', '0.1.0')
 API_DESCRIPTION = os.getenv('API_DESCRIPTION', 'A social network API with user posts, comments, likes and follows')
+
+# JWT Settings
+SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-for-jwt-please-change-in-production')
+ALGORITHM = os.getenv('ALGORITHM', 'HS256')
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
