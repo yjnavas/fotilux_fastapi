@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Optional
 
 class PostBase(BaseModel):
-    title: str
     body: str
 
 class PostCreate(PostBase):
