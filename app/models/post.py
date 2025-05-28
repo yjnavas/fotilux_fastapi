@@ -11,7 +11,6 @@ class PostStatus(enum.Enum):
 class Post(Base):
     __tablename__ = 'post'
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, nullable=False)
     body = Column(Text, nullable=False)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     status = Column(String, default='active')

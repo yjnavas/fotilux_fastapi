@@ -14,7 +14,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
   web:
     build: .
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    command: bash /app/start.sh
     env_file:
       - .env
     volumes:
