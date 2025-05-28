@@ -5,6 +5,8 @@ from typing import List
 from app.core.database import get_db
 from app.schemas.favorite import FavoriteOut
 from app.crud import favorite as favorite_crud
+from app.utils.auth import get_current_active_user
+from app.models.user import User
 
 router = APIRouter(
     prefix="/favorites",
@@ -13,14 +15,19 @@ router = APIRouter(
 )
 
 @router.post("/{post_id}", response_model=FavoriteOut, status_code=status.HTTP_201_CREATED)
-def create_favorite(post_id: int, user_id: int, db: Session = Depends(get_db)):
-    return favorite_crud.create_favorite(db=db, post_id=post_id, user_id=user_id)
+def create_favorite(post_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+    return favorite_crud.create_favorite(db=db, post_id=post_id, user_id=current_user.id)
 
 @router.get("/user/{user_id}", response_model=List[FavoriteOut])
 def read_user_favorites(user_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     favorites = favorite_crud.get_user_favorites(db, user_id=user_id, skip=skip, limit=limit)
     return favorites
 
+@router.get("/post/{post_id}", response_model=List[FavoriteOut])
+def read_post_favorites(post_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    favorites = favorite_crud.get_post_favorites(db, post_id=post_id, skip=skip, limit=limit)
+    return favorites
+
 @router.delete("/{post_id}")
-def delete_favorite(post_id: int, user_id: int, db: Session = Depends(get_db)):
-    return favorite_crud.delete_favorite(db=db, post_id=post_id, user_id=user_id)
+def delete_favorite(post_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+    return favorite_crud.delete_favorite(db=db, post_id=post_id, user_id=current_user.id)
