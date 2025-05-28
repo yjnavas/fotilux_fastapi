@@ -14,7 +14,12 @@ services:
       - postgres_data:/var/lib/postgresql/data
   web:
     build: .
-    command: bash /app/start.sh
+    command: >
+      bash -c "sleep 5 &&
+              echo 'Ejecutando migraciones...' &&
+              alembic upgrade head &&
+              echo 'Iniciando la aplicación...' &&
+              uvicorn app.main:app --host 0.0.0.0 --port 8000"
     env_file:
       - .env
     volumes:

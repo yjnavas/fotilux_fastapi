@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.user import User, Follow
-from app.schemas.user import UserCreate
+from app.schemas.user import UserCreate, UserUpdate
 from fastapi import HTTPException
 from app.utils.auth import get_password_hash
 
@@ -64,3 +64,19 @@ def unfollow_user(db: Session, following_user_id: int, followed_user_id: int):
     db.delete(db_follow)
     db.commit()
     return {"status": "success"}
+
+def update_user(db: Session, user_id: int, user_update: UserUpdate):
+    # Get the user to update
+    db_user = get_user(db, user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Update user data with non-None values from the update schema
+    user_data = user_update.model_dump(exclude_unset=True)
+    for key, value in user_data.items():
+        if value is not None:
+            setattr(db_user, key, value)
+    
+    db.commit()
+    db.refresh(db_user)
+    return db_user

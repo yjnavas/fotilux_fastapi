@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.core.database import get_db
-from app.schemas.user import UserCreate, UserOut
+from app.schemas.user import UserCreate, UserOut, UserUpdate
 from app.schemas.follow import FollowOut
 from app.crud import user as user_crud
 from app.utils.auth import get_current_active_user
@@ -59,3 +59,20 @@ async def unfollow_user(user_id: int, target_id: int, db: Session = Depends(get_
     if current_user.id != user_id:
         raise HTTPException(status_code=403, detail="No tienes permiso para realizar esta acción")
     return user_crud.unfollow_user(db, following_user_id=user_id, followed_user_id=target_id)
+
+@router.put("/{user_id}", response_model=UserOut)
+async def update_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_active_user)):
+    """
+    Actualizar información de un usuario
+    
+    Campos actualizables:
+    - name: Nombre del usuario
+    - user_name: Nombre de usuario
+    - phone: Número de teléfono
+    - address: Dirección
+    - bio: Biografía
+    """
+    # Verificar que el usuario autenticado sea el mismo que intenta actualizar su información
+    if current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="No tienes permiso para realizar esta acción")
+    return user_crud.update_user(db, user_id=user_id, user_update=user_update)
